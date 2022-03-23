@@ -30,9 +30,9 @@
 * Locally
     * Set up
         * NodeJs
-            * > 8
+            * +8
         * NPM
-            * >5
+            * +5
         * C / C++ compilations tools
             * Some necessary modules are coded in these languages
             * [Ubuntu]
@@ -63,3 +63,10 @@
         * 'Solidity'
     * [JetBrains]
         * 'Solidity'
+* Settings
+  * [VSC]
+    * .vscode
+      * File to specify the workspace setting
+      * `solidity.compileUsingRemoteVersion` 
+        * Each time project is compiled --> VSC will try to download the solc's version indicated
+        * Version indicated will appear in settings, workspace, solidity configuration, compile using remote version
