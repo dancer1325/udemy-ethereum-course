@@ -1,20 +1,32 @@
-const assert = require('assert');
+const assert = require('assert');               // NodeJs's module
 const AssertionError = require('assert').AssertionError;
-const Web3 = require('web3');
+const Web3 = require('web3');                   // [External library] Ethereum JS API. First letter capitalized, because it's a constructor
 
-const provider = new Web3.providers.HttpProvider("HTTP://127.0.0.1:7545");
+const provider = new Web3.providers.HttpProvider("HTTP://127.0.0.1:7545");  // Communication with the server. Locally it's Ganache server IP
 const web3 = new Web3(provider);
 
-const { interface, bytecode } = require('../scripts/compile');
+// require allows using, since you are exporting something from that path
+// 1) For solidity ^0.4.24;
+// const { interface, bytecode } = require('../scripts/compile');
+// 2) For solidity ^0.8.6;
+const { abi, evm } = require('../scripts/compile');
 
 let accounts;
 let usersContract;
 
+// Comes from mocha
 beforeEach(async () => {
     accounts = await web3.eth.getAccounts();
-    usersContract = await new web3.eth.Contract(JSON.parse(interface))
-        .deploy({ data: bytecode })
-        .send({ from: accounts[0], gas: '1000000' });
+    // usersContract = await new web3.eth.Contract(JSON.parse(interface))      // Create a new contract
+    // usersContract = await new web3.eth.Contract(JSON.stringify(abi))               // Create a new contract. 1) For solidity ^0.4.24;
+    usersContract = await new web3.eth.Contract(abi)               // Create a new contract
+        // .deploy({ data: bytecode })                                    // Deploy the contract. 1) For solidity ^0.4.24;
+        // .deploy({ data: evm })                                    // Deploy the contract
+        // .deploy({ data: JSON.stringify(evm) })               // Problem: The data field must be HEX encoded data
+        // .deploy({ data: evm.bytecode.toString() })           // Problem: The data field must be HEX encoded data
+        // .deploy({ data: JSON.stringify(evm.bytecode) })      // Problem: The data field must be HEX encoded data
+        .deploy({ data: evm.bytecode.object })          // Required from latest versions
+        .send({ from: accounts[0], gas: '1000000', gasPrice: '30000000000000' });                  // Send the transaction
 });
 
 describe('The UsersContract', async () => {

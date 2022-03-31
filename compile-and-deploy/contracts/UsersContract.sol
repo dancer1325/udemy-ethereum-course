@@ -1,4 +1,5 @@
-pragma solidity ^0.4.24;            // Specify solc's version to use
+//pragma solidity ^0.4.24;            // Specify solc's version to use. Problem: We were getting errors with  old versions
+pragma solidity ^0.8.6;               // Update versions
 
 contract UsersContract {
 
@@ -20,7 +21,8 @@ contract UsersContract {
     event onUserJoined(address, string);
 
     // Join an User to the contract
-    function join(string name, string surName) public {
+//    function join(string name, string surName) public {                   // Old versions (at least 0.4.24)
+    function join(string memory name, string memory surName) public {       // New versions (at least 0.8.6). Required to add data location
         require(!userJoined(msg.sender));               // Check not to join twice an user
         // Ways to store variable, extracted from a mapping process
         // 1) storage
@@ -38,7 +40,8 @@ contract UsersContract {
     // address  It's a reserved keyword in solidity --> it can't be used as name of variable
     // view     Because it's a function just to return values, no value will be modified
     // (string, string)   It's possible to return a tuple of values
-    function getUser(address addr) public view returns (string, string) {
+//    function getUser(address addr) public view returns (string, string) {                         // Old versions (at least 0.4.24)
+    function getUser(address addr) public view returns (string memory, string memory) {             // New versions (at least 0.8.6). Required to add data location
         require(userJoined(msg.sender));
         // 2) memory
         // 2.1] All the modifications done later won't be persisted
