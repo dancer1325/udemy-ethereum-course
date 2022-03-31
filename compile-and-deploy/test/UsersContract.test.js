@@ -16,7 +16,7 @@ let usersContract;
 
 // Comes from mocha
 beforeEach(async () => {
-    accounts = await web3.eth.getAccounts();
+    accounts = await web3.eth.getAccounts();                                    // Connect to the provider, locally it's Ganache to get the existing accounts
     // usersContract = await new web3.eth.Contract(JSON.parse(interface))      // Create a new contract
     // usersContract = await new web3.eth.Contract(JSON.stringify(abi))               // Create a new contract. 1) For solidity ^0.4.24;
     usersContract = await new web3.eth.Contract(abi)               // Create a new contract
@@ -26,11 +26,12 @@ beforeEach(async () => {
         // .deploy({ data: evm.bytecode.toString() })           // Problem: The data field must be HEX encoded data
         // .deploy({ data: JSON.stringify(evm.bytecode) })      // Problem: The data field must be HEX encoded data
         .deploy({ data: evm.bytecode.object })          // Required from latest versions
-        .send({ from: accounts[0], gas: '1000000', gasPrice: '30000000000000' });                  // Send the transaction
+        .send({ from: accounts[0], gas: '1000000', gasPrice: '3000000000000' });                  // Send the transaction
 });
 
 describe('The UsersContract', async () => {
 
+    // Deploy the contract in the blockchain. It consumes gas
     it('should deploy', () => {
         console.log(usersContract.options.address);
         assert.ok(usersContract.options.address);
@@ -40,18 +41,20 @@ describe('The UsersContract', async () => {
         let name = "Carlos";
         let surname = "Landeras";
 
-        await usersContract.methods.join(name, surname)
-            .send({ from: accounts[0], gas: '500000' });
+        await usersContract.methods.join(name, surname)         // methods  Expose all the methods contained into the contract
+            .send({ from: accounts[0], gas: '500000' });        // send     Send the transaction. Gas to give for the transaction once it's checked and mined the block
     });
 
-    it('should retrieve a user', async () => {
+    it('should retrieve an user', async () => {
         let name = "Carlos";
         let surname = "Landeras";
 
+        // Create another user, to test here in this test
         await usersContract.methods.join(name, surname)
             .send({ from: accounts[0], gas: '500000' });
 
-        let user = await usersContract.methods.getUser(accounts[0]).call();
+        let user = await usersContract.methods.getUser(accounts[0]).call();     // .call()   Reading operations in web3
+        // user is a tuple of values returned by getUser
 
         assert.equal(name, user[0]);
         assert.equal(surname, user[1]);
@@ -64,11 +67,13 @@ describe('The UsersContract', async () => {
 
         try {
             await usersContract.methods.join("Ana", "Gomez")
-                .send({ from: accounts[1], gas: '500000' });
+                .send({ from: accounts[1], gas: '500000' });            // We are using the same account as previously to link to a user
             assert.fail('same account cant join twice');
         }
         catch (e) {
             if (e instanceof AssertionError) {
+                // Error thrown in case the logic of the contract hasn't worked fine, let creating twice, that's why this test goes to
+                // assert.fail('same account cant join twice'); which throws an AssertionError
                 assert.fail(e.message);
             }
         }
@@ -77,7 +82,7 @@ describe('The UsersContract', async () => {
     it('should not allow retrieving a not registered user', async () => {
 
         try {
-            await usersContract.methods.getUser(accounts[0]).call();
+            await usersContract.methods.getUser(accounts[0]).call();             // .call()   Reading operations in web3
             assert.fail('user should not be registered');
         }
         catch (e) {
